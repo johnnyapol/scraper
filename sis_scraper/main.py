@@ -378,9 +378,8 @@ with requests.Session() as s:  # We purposefully don't use aiohttp here since SI
             json.dump(school_columns, schools_f, sort_keys=False, indent=2)
 
         # Generate binary conflict output
-        # (32bit crn + 3*64bit conflicts 5am-midnight(by 30min))for every course
-        TIME_START = 700
-        TIME_END = 2200
+        TIME_START = 0
+        TIME_END = 2400
         NUM_HOURS = int((TIME_END - TIME_START) / 100)
 
         MINUTE_GRANULARITY = 10
@@ -416,10 +415,8 @@ with requests.Session() as s:  # We purposefully don't use aiohttp here since SI
                                         time["timeStart"] <= hour + minute
                                         and time["timeEnd"] > hour + minute
                                     ):
-                                        minute_idx = int(minute / 10)
-                                        hour_idx = (
-                                            int(hour / 100) - 7
-                                        )  # we start at 7am
+                                        minute_idx = minute // 10
+                                        hour_idx = hour // 100
                                         conflict[
                                             day_offsets[day]
                                             + hour_idx * (60 // MINUTE_GRANULARITY)
