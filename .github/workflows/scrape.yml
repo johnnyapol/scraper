@@ -87,11 +87,15 @@ jobs:
           name: schools
           path: data
 
-      - name: Scrape courses
-        run: python3 sis_scraper/main.py
-
-      - name: Scrape prerequisites
-        run: python3 prerequisites_scraper/main.py
+      - name: Scrape courses & prerequesites
+        run: |
+         python3 sis_scraper/main.py&
+         PID1=$!
+         python3 prerequisites_scraper/main.py&
+         PID2=$!
+         set -e
+         wait $PID1
+         wait $PID2
 
       - name: Upload data
         uses: actions/upload-artifact@v2
