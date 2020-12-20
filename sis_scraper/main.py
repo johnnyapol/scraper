@@ -306,11 +306,13 @@ with requests.Session() as s:  # We purposefully don't use aiohttp here since SI
         school_columns = optimize_column_ordering(schools)
         with open(f"data/{term}/schools.json", "w") as schools_f:
             json.dump(school_columns, schools_f, sort_keys=False, indent=2)
-
+        year = int(term[: len(term) - 2])
         unique_ranges = set()
-        get_date = lambda x: date(1, int(x[0]), int(x[1]))
+        get_date = lambda x: date(year, int(x[0]), int(x[1]))
 
         divide = list(range(1, 61))
+
+        end_date = None
 
         for dept in data:
             for course in dept["courses"]:
@@ -328,6 +330,19 @@ with requests.Session() as s:  # We purposefully don't use aiohttp here since SI
                             continue
                         start_date = get_date(start)
                         unique_ranges.add(start_date)
+
+                        end = time["dateEnd"].split("/")
+
+                        if len(end) < 2:
+                            continue
+                        end = get_date(end)
+                        end_date = end if not end_date else max(end_date, end)
+
+        if end_date and date.today() > end_date:
+            # Skip scraping semesters that ended
+            print(f"Skipping term {term} as last class ended on {end_date}.")
+            continue
+
         unique_ranges = list(unique_ranges)
         unique_ranges.sort(reverse=True)
 
